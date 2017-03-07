@@ -1,5 +1,7 @@
 RSpec.feature 'Order', :js do
   given!(:product) { create(:product) }
+  let(:shipment) { create(:shipment, cost: 500.00) }
+  let(:order) { create(:order_with_totals) }
 
   background do
     reset_spree_preferences do |config|
@@ -18,6 +20,21 @@ RSpec.feature 'Order', :js do
       expect(page).to have_text '$19.99'
       select 'EUR', from: 'currency'
       expect(page).to have_text '€16.00'
+    end
+  end
+
+  context 'when contains shipment' do
+    xit 'changes its currency, if user switches the currency.' do
+      calc = create(:shipping_calculator_with_currency, currency: "USD")
+      calc2 = create(:shipping_calculator_with_currency, amount: 5.00, currency: "EUR")
+      shipment.shipping_methods << create(:shipping_method, calculator: calc)
+      shipment.shipping_methods << create(:shipping_method, calculator: calc2)
+      order.shipments << shipment
+      order.update_column(:state, "payment")
+      allow_any_instance_of(Spree::OrdersController).to receive_messages current_order: order
+      visit cart_path
+      select 'EUR', from: 'currency'
+      expect(page).to have_text '€5.00'
     end
   end
 end

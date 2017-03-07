@@ -19,6 +19,7 @@ end
 require 'rspec/rails'
 require 'ffaker'
 require 'pry'
+require 'capybara-screenshot/rspec'
 
 RSpec.configure do |config|
   config.mock_with :rspec
